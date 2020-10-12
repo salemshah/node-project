@@ -16,7 +16,7 @@ let users = [
  * @param       next
  */
 exports.getBootcamps = (req, res, next) => {
-    res.status(200).json({success: true, msg: "Get all users"});
+    res.status(200).json({success: true, msg: "Get all users", tests: req.tests});
     //res.status(400);
     //res.sendStatus(400)
     //res.send({name: "ahmad"})// il envoie en tant que JSON
