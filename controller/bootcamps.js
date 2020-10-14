@@ -1,11 +1,4 @@
-
-
-let users = [
-    {id: 1, name: "jan"},
-    {id: 2, name: "khan"},
-    {id: 3, name: "karim"},
-    {id: 4, name: "samim"},
-]
+const Bootcamp = require('../models/Bootcamps')
 
 /**
  * @desc        Get all bootcamps
@@ -44,8 +37,16 @@ exports.getBootcamp = (req, res, next) => {
  * @param       res
  * @param       next
  */
-exports.createBootcamp = (req, res, next) => {
-    res.status(200).send({success: true, msg: "Created a new user"})
+exports.createBootcamp = async (req, res, next) => {
+
+    try {
+        const bootcamp = await Bootcamp.create(req.body)
+        res.status(201).send({success: true, data: bootcamp})
+    } catch (e) {
+        res.status(400).json({success: false, error: e.message})
+    }
+
+
 }
 
 /**
