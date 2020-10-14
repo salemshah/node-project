@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // mount routers
-app.use('/api/v1/bootcamps', bootcamp)
+app.use(process.env.MAIN_URL, bootcamp)
 
 // we can use ROUTE like this also
 /*app.get('/', (req, res) =>{

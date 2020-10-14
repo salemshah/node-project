@@ -99,5 +99,5 @@ const BootcampSchema = new mongoose.Schema({
         default: Date.now
     }
 })
-
+// "Bootcamp" est le nom de collection et en mongoDB est devenue "Bootcamps"
 module.exports = mongoose.model('Bootcamp', BootcampSchema)

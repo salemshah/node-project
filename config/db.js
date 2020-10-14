@@ -4,7 +4,8 @@ const mongoose = require('mongoose'),
             useNewUrlParser: true,
             useCreateIndex: true,
             useFindAndModify: false,
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
+            connectTimeoutMS: 1000
         });
         console.log(`MongoDB Connected: ${conn.connection.host}`.bgCyan.black) };
 

@@ -8,8 +8,13 @@ const Bootcamp = require('../models/Bootcamps')
  * @param       res
  * @param       next
  */
-exports.getBootcamps = (req, res, next) => {
-    res.status(200).json({success: true, msg: "Get all users", tests: req.tests});
+exports.getBootcamps = async (req, res, next) => {
+    try {
+        const bootcamps = await Bootcamp.find();
+        res.status(200).send({success: true, data: bootcamps})
+    } catch (e) {
+        res.send(400).send({success: false, error: e.message})
+    }
     //res.status(400);
     //res.sendStatus(400)
     //res.send({name: "ahmad"})// il envoie en tant que JSON
@@ -18,15 +23,23 @@ exports.getBootcamps = (req, res, next) => {
 }
 
 /**
- * @desc        Get all bootcamps
+ * @desc        Get single bootcamps
  * @route       Get /api/v1/bootcamps/:id
  * @access      Public
  * @param       req
  * @param       res
  * @param       next
  */
-exports.getBootcamp = (req, res, next) => {
-    res.status(200).send({success: true, msg: `Get one user ${req.params.id}`})
+exports.getBootcamp = async (req, res, next) => {
+    try {
+        const bootcamp = await Bootcamp.findById(req.params.id)
+        if (!bootcamp) {
+            return res.status(400).send({success: false, error: `There is no product by this ID ${req.params.id}`})
+        }
+        res.status(200).send({success: true, data: bootcamp})
+    } catch (e) {
+        res.status(400).send({success: false, error: e.message})
+    }
 }
 
 /**
@@ -57,8 +70,22 @@ exports.createBootcamp = async (req, res, next) => {
  * @param       res
  * @param       next
  */
-exports.updateBootcamp = (req, res, next) => {
-    res.status(200).send({success: true, msg: `Updated the user ${req.params.id}`})
+exports.updateBootcamp = async (req, res, next) => {
+    try {
+        const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        })
+        if (!bootcamp) {
+            return res.status(400).send({
+                success: false,
+                error: `There is no product by this ID to update ${req.params.id}`
+            })
+        }
+        res.status(200).send({success: true, data: bootcamp})
+    } catch (e) {
+        res.status(400).send({success: false, error: e.message})
+    }
 }
 
 /**
@@ -69,6 +96,17 @@ exports.updateBootcamp = (req, res, next) => {
  * @param       res
  * @param       next
  */
-exports.deleteBootcamp = (req, res, next) => {
-    res.status(200).send({success: true, msg: `Deleted the user ${req.params.id}`})
+exports.deleteBootcamp = async (req, res, next) => {
+    try {
+        const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id)
+        if (!bootcamp) {
+            return res.status(400).send({
+                success: false,
+                error: `There is no product by this ID to delete ${req.params.id}`
+            })
+        }
+        res.status(200).send({success: true, countBootcamp: Bootcamp.length, data: {}})
+    } catch (e) {
+        res.status(400).send({success: false, error: e.message})
+    }
 }
