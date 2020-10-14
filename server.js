@@ -4,8 +4,8 @@ const bootcamp = require('./routes/bootcamps');
 const colors = require('colors');
 //const logger = require('./middleware/logger')
 const morgan = require('morgan')
+const errorHandler = require('./middleware/error')
 const connectDB = require('./config/db')
-
 
 
 // load env vars
@@ -26,6 +26,9 @@ if (process.env.NODE_ENV === "development") {
 
 // mount routers
 app.use(process.env.MAIN_URL, bootcamp)
+app.use((err, req, res, next) => {
+    errorHandler(err, req, res, next)
+});
 
 // we can use ROUTE like this also
 /*app.get('/', (req, res) =>{
