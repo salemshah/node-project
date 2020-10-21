@@ -1,4 +1,5 @@
 const Bootcamp = require('../models/Bootcamps')
+const asyncHandler = require('../middleware/async') // avoid repeating the try/catch code on each async middleware
 const ErrorResponse = require('../utils/errorResponse')
 /**
  * @desc        Get all bootcamps
@@ -8,20 +9,15 @@ const ErrorResponse = require('../utils/errorResponse')
  * @param       res
  * @param       next
  */
-exports.getBootcamps = async (req, res, next) => {
-    try {
-        const bootcamps = await Bootcamp.find();
-        res.status(200).send({success: true, data: bootcamps})
-    } catch (e) {
-        //res.send(400).send({success: false, error: e.message})
-        next(e)
-    }
+exports.getBootcamps = asyncHandler(async (req, res, next) => {
+    const bootcamps = await Bootcamp.find();
+    res.status(200).send({success: true, data: bootcamps})
     //res.status(400);
     //res.sendStatus(400)
     //res.send({name: "ahmad"})// il envoie en tant que JSON
     //res.json({name: "ahmad"})// il envoie en tant que JSON
     //res.send("<h2>Hello from express framework</h2>");
-}
+})
 
 /**
  * @desc        Get single bootcamps
@@ -31,6 +27,18 @@ exports.getBootcamps = async (req, res, next) => {
  * @param       res
  * @param       next
  */
+//-------------- The first method -----------------
+exports.getBootcamp = asyncHandler(async (req, res, next) => {
+    const bootcamp = await Bootcamp.findById(req.params.id)
+    if (!bootcamp) {
+        //return res.status(400).send({success: false, error: `There is no product by this ID ${req.params.id}`})
+        return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404))
+    }
+    res.status(200).send({success: true, data: bootcamp})
+})
+
+//-------------- The second method -----------------
+/*
 exports.getBootcamp = async (req, res, next) => {
     try {
         const bootcamp = await Bootcamp.findById(req.params.id)
@@ -40,11 +48,12 @@ exports.getBootcamp = async (req, res, next) => {
         }
         res.status(200).send({success: true, data: bootcamp})
     } catch (e) {
-        /*res.status(400).send({success: false, error: e.message})*/
+        /!*res.status(400).send({success: false, error: e.message})*!/
         //next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404))
         next(e)
     }
 }
+*/
 
 /**
  * @desc        Create a new bootcamp
@@ -54,7 +63,14 @@ exports.getBootcamp = async (req, res, next) => {
  * @param       res
  * @param       next
  */
-exports.createBootcamp = async (req, res, next) => {
+//-------------- The first method -----------------
+exports.createBootcamp = asyncHandler(async (req, res, next) => {
+    const bootcamp = await Bootcamp.create(req.body)
+    res.status(201).send({success: true, data: bootcamp})
+})
+
+//-------------- The second method -----------------
+/*exports.createBootcamp = async (req, res, next) => {
 
     try {
         const bootcamp = await Bootcamp.create(req.body)
@@ -63,9 +79,8 @@ exports.createBootcamp = async (req, res, next) => {
         //res.status(400).json({success: false, error: e.message})
         next(e)
     }
+}*/
 
-
-}
 
 /**
  * @desc        Update a bootcamp
@@ -75,7 +90,24 @@ exports.createBootcamp = async (req, res, next) => {
  * @param       res
  * @param       next
  */
-exports.updateBootcamp = async (req, res, next) => {
+
+//-------------- The first method -----------------
+exports.updateBootcamp = asyncHandler(async (req, res, next) => {
+    const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true
+    })
+    if (!bootcamp) {
+        return res.status(400).send({
+            success: false,
+            error: `There is no product by this ID to update ${req.params.id}`
+        })
+    }
+    res.status(200).send({success: true, data: bootcamp})
+})
+
+//-------------- The second method -----------------
+/*exports.updateBootcamp = async (req, res, next) => {
     try {
         const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
@@ -89,10 +121,10 @@ exports.updateBootcamp = async (req, res, next) => {
         }
         res.status(200).send({success: true, data: bootcamp})
     } catch (e) {
-        /*res.status(400).send({success: false, error: e.message})*/
+        /!*res.status(400).send({success: false, error: e.message})*!/
         next(e)
     }
-}
+}*/
 
 /**
  * @desc        Delete a bootcamp
@@ -102,6 +134,20 @@ exports.updateBootcamp = async (req, res, next) => {
  * @param       res
  * @param       next
  */
+
+//-------------- The first method -----------------
+exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
+    const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id)
+    if (!bootcamp) {
+        return res.status(400).send({
+            success: false,
+            error: `There is no product by this ID to delete ${req.params.id}`
+        })
+    }
+    res.status(200).send({success: true, countBootcamp: Bootcamp.length, data: {}})
+})
+//-------------- The second method -----------------
+/*
 exports.deleteBootcamp = async (req, res, next) => {
     try {
         const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id)
@@ -116,4 +162,4 @@ exports.deleteBootcamp = async (req, res, next) => {
         //res.status(400).send({success: false, error: e.message})
         next(e)
     }
-}
+}*/
