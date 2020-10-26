@@ -1,6 +1,7 @@
 const Bootcamp = require('../models/Bootcamps')
 const asyncHandler = require('../middleware/async') // avoid repeating the try/catch code on each async middleware
 const ErrorResponse = require('../utils/errorResponse')
+const geocoder = require('../utils/geocoder')
 /**
  * @desc        Get all bootcamps
  * @route       Get /api/v1/bootcamps
@@ -163,3 +164,42 @@ exports.deleteBootcamp = async (req, res, next) => {
         next(e)
     }
 }*/
+
+/**
+ * @desc        Get bootcamps within a radius
+ * @route       DELETE /api/v1/bootcamps/:zipcode/:distance
+ * @access      Privet
+ * @param       req
+ * @param       res
+ * @param       next
+ */
+
+//-------------- The first method -----------------
+exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
+    const {zipcode, distance} = req.params
+    //console.log(distance)
+    // get lat/lng from geocoder
+    const loc = await geocoder.geocode(zipcode)
+    const lat = loc[0].latitude;
+    const lng = loc[0].longitude;
+    console.log(loc)
+/*
+console.log(lat)//42.347172
+console.log(lng)//-71.102294
+*/
+    // calc radius using radians
+    // divide dist by radius of earth
+    // earth radius = 3,963 mi / 6,378 km
+    const radius = distance / 3963
+
+    const bootcamps = await Bootcamp.find({
+        location: { $geoWithin: { $centerSphere: [ [ lng, lat ], radius ] } }
+    });
+
+    res.status(200).send({
+        success: true,
+        count: bootcamps.length,
+        data: bootcamps,
+    })
+
+})
