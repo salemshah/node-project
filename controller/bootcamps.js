@@ -182,7 +182,7 @@ exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
     const loc = await geocoder.geocode(zipcode)
     const lat = loc[0].latitude;
     const lng = loc[0].longitude;
-    console.log(loc)
+    //console.log(loc)
 /*
 console.log(lat)//42.347172
 console.log(lng)//-71.102294

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify')
 const geocoder = require('../utils/geocoder')
+
 const BootcampSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -42,11 +43,9 @@ const BootcampSchema = new mongoose.Schema({
         type: {
             type: String,
             enum: ['Point'],
-            //required: true
         },
         coordinates: {
             type: [Number],
-            //required: true,
             index: '2dsphere'
 
         },
@@ -115,7 +114,7 @@ BootcampSchema.pre('save', function (next) {
 BootcampSchema.pre('save', async function (next) {
     const loc = await geocoder.geocode(this.address);
     this.location = {
-        Type: 'Point',
+        type: 'Point',
         coordinates: [loc[0].longitude, loc[0].latitude],
         formattedAddress: loc[0].formattedAddress,
         street: loc[0].streetName,
