@@ -11,8 +11,49 @@ const geocoder = require('../utils/geocoder')
  * @param       next
  */
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-    const bootcamps = await Bootcamp.find();
-    res.status(200).send({success: true, data: bootcamps})
+    let query;
+
+    //copy req.query
+    const reqQuery = {...req.query};
+
+    //fields to exclude
+    const removeFields = ['select', 'sort']
+    console.log(removeFields)
+
+    //loop over removeFields and delete them from reqQuery
+    removeFields.forEach((param) => {
+        delete reqQuery[param]
+    })
+
+    //create query string
+    let queryStr = JSON.stringify(reqQuery);
+
+    //create operators ($gt, gte, in etc...)
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in|nin|ne|eq)\b/g, match => `$${match}`);
+    console.log(queryStr)
+
+    //finding resource
+    query = Bootcamp.find(JSON.parse(queryStr))
+
+    // select field
+    if (req.query.select) {
+        const fields = req.query.select.split(',').join(' ')
+        /*console.log(fields)
+        console.log(req.query.select)*/
+        query = query.select(fields)
+    }
+
+    // sort fields
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ')
+        query = query.sort(sortBy)
+    } else {
+        query = query.sort('-createAt')
+    }
+
+    // executing query
+    const bootcamps = await query;
+    res.status(200).send({success: true, count: bootcamps.length, data: bootcamps})
     //res.status(400);
     //res.sendStatus(400)
     //res.send({name: "ahmad"})// il envoie en tant que JSON
@@ -183,17 +224,17 @@ exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
     const lat = loc[0].latitude;
     const lng = loc[0].longitude;
     //console.log(loc)
-/*
-console.log(lat)//42.347172
-console.log(lng)//-71.102294
-*/
+    /*
+    console.log(lat)//42.347172
+    console.log(lng)//-71.102294
+    */
     // calc radius using radians
     // divide dist by radius of earth
     // earth radius = 3,963 mi / 6,378 km
     const radius = distance / 3963
 
     const bootcamps = await Bootcamp.find({
-        location: { $geoWithin: { $centerSphere: [ [ lng, lat ], radius ] } }
+        location: {$geoWithin: {$centerSphere: [[lng, lat], radius]}}
     });
 
     res.status(200).send({
