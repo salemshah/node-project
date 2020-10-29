@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const slugify = require('slugify')
 const geocoder = require('../utils/geocoder')
 
+//create new schema
 const BootcampSchema = new mongoose.Schema({
     name: {
         type: String,

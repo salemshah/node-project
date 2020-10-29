@@ -8,6 +8,7 @@ dotenv.config({path: './config/config.env'});
 
 // load models
 const Bootcamp = require('./models/Bootcamps');
+const Course = require('./models/Course');
 
 // connect to DB
 mongoose.connect(process.env.MONGO_URI, {
@@ -18,13 +19,21 @@ mongoose.connect(process.env.MONGO_URI, {
     connectTimeoutMS: 1000
 });
 
-//read JSON files
-const bootcamps = JSON.parse(fs.readFileSync(`${__dirname}/_data/bootcamps.json`, 'utf-8'))
+//read bootcamps.json file
+const bootcamps = JSON.parse(
+    fs.readFileSync(`${__dirname}/_data/bootcamps.json`, 'utf-8')
+)
 
-// import into DB
+// read courses.json file
+const course = JSON.parse(
+    fs.readFileSync(`${__dirname}/_data/courses.json`, 'utf-8')
+);
+
+// import Data into DB
 const importData = async () => {
     try {
-        await Bootcamp.create(bootcamps)
+        await Bootcamp.create(bootcamps);
+        await Course.create(course);
         console.log('Data Imported...'.green.inverse)
         process.exit()
     } catch (e) {
@@ -32,10 +41,11 @@ const importData = async () => {
     }
 }
 
-// delete data
+// delete Data from DB
 const deleteData = async () => {
     try {
-        await Bootcamp.deleteMany()
+        await Bootcamp.deleteMany();
+        await Course.deleteMany();
         console.log('Data Destroyed...'.red.inverse)
         process.exit()
     } catch (e) {
@@ -44,7 +54,7 @@ const deleteData = async () => {
 }
 
 if (process.argv[2] === '-i') {
-    importData()
+    importData().catch(e => console.log(e))
 } else if (process.argv[2] === '-d') {
-    deleteData()
+    deleteData().catch(e => console.log(e))
 }

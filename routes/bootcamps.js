@@ -23,4 +23,10 @@ routers
 
 });*/
 
+//----------------------------------------------------
+// Include other resources routers
+const courseRouter = require('./courses')
+// Re-route into other resource (courses) routers
+routers.use('/:bootcampId/courses', courseRouter)
+
 module.exports = routers;

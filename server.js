@@ -1,12 +1,15 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const bootcamp = require('./routes/bootcamps');
+
 const colors = require('colors');
 //const logger = require('./middleware/logger')
 const morgan = require('morgan')
 const errorHandler = require('./middleware/error')
 const connectDB = require('./config/db')
 
+// read route files
+const bootcamp = require('./routes/bootcamps');
+const courses = require('./routes/courses');
 
 // load env vars
 dotenv.config({path: './config/config.env'})
@@ -25,7 +28,19 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // mount routers
-app.use(process.env.MAIN_URL, bootcamp)
+
+/**
+ * @desc             It will redirect to the bootcamps "Routs" Located in (devcamper_api/routes/Bootcamps.js)
+ * @Type-in-URL      http://localhost:9000/api/v1/bootcamps
+ */
+app.use('/api/v1/bootcamps', bootcamp)
+/**
+ * @desc             It will redirect to the courses "Routs" Located in (devcamper_api/routes/Courses.js)
+ * @Type-in-URL      http://localhost:9000/api/v1/courses
+ */
+app.use('/api/v1/courses', courses)
+
+// for errors
 app.use((err, req, res, next) => {
     errorHandler(err, req, res, next)
 });

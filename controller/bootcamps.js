@@ -17,8 +17,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
     const reqQuery = {...req.query};
 
     //fields to exclude
-    const removeFields = ['select', 'sort']
-    console.log(removeFields)
+    const removeFields = ['select', 'sort', 'limit', 'page']
 
     //loop over removeFields and delete them from reqQuery
     removeFields.forEach((param) => {
@@ -30,16 +29,20 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
 
     //create operators ($gt, gte, in etc...)
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in|nin|ne|eq)\b/g, match => `$${match}`);
-    console.log(queryStr)
+    let queryStrParse = JSON.parse(queryStr)
 
     //finding resource
-    query = Bootcamp.find(JSON.parse(queryStr))
+    query = Bootcamp.find(queryStrParse)
 
     // select field
     if (req.query.select) {
+        /**
+         * Type in URL:                         {{URL}}/api/v1/bootcamps?select=name,description,housing
+         * The (req.query) will become          req.query print  { select: 'name,description,housing' }
+         * the "fields" var will become         name description housing
+         * the "query" var will become          all information about connection and all fields from Bootcamp Schema
+         */
         const fields = req.query.select.split(',').join(' ')
-        /*console.log(fields)
-        console.log(req.query.select)*/
         query = query.select(fields)
     }
 
@@ -51,9 +54,50 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
         query = query.sort('-createAt')
     }
 
+    //pagination
+    /**
+     * Type in URL              {{URL}}/api/v1/bootcamps?limit=2&page=1
+     * var "page"               2
+     * var "itemParPage"        2 //itemParPage = limit
+     * var "startIndex"         0
+     * var "endIndex"           2
+     */
+    const page = parseInt(req.query.page, 10) || 1;
+    const itemParPage = parseInt(req.query.limit, 10) || 3;
+    const startIndex = (page - 1) * itemParPage;
+    const endIndex = page * itemParPage;
+
+    console.log('page => ', page)
+    console.log('itemParPage => ', itemParPage)
+    console.log('startIndex =>', startIndex)
+    console.log('endIndex => ', endIndex)
+
+    const total = await Bootcamp.countDocuments() //it count all data record from database
+    query = query.skip(startIndex).limit(itemParPage);
+
+
+    //pagination result
+    const pagination = {};
+
+    if (endIndex < total) {
+        pagination.next = {
+            page: page + 1,
+            itemParPage,
+        }
+    }
+
+    if (startIndex > 0) {
+        pagination.prev = {
+            page: page - 1,
+            itemParPage,
+        }
+    }
+
     // executing query
     const bootcamps = await query;
-    res.status(200).send({success: true, count: bootcamps.length, data: bootcamps})
+    res.status(200).send({success: true, count: bootcamps.length, pagination, data: bootcamps})
+
+
     //res.status(400);
     //res.sendStatus(400)
     //res.send({name: "ahmad"})// il envoie en tant que JSON
