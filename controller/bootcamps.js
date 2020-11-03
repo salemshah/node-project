@@ -29,10 +29,12 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
 
     //create operators ($gt, gte, in etc...)
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in|nin|ne|eq)\b/g, match => `$${match}`);
-    let queryStrParse = JSON.parse(queryStr)
 
     //finding resource
-    query = Bootcamp.find(queryStrParse)
+    query = Bootcamp.find(JSON.parse(queryStr)).populate({
+        path: 'coursesLink',
+        select: 'title tuition'
+    })
 
     // select field
     if (req.query.select) {
@@ -63,7 +65,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
      * var "endIndex"           2
      */
     const page = parseInt(req.query.page, 10) || 1;
-    const itemParPage = parseInt(req.query.limit, 10) || 3;
+    const itemParPage = parseInt(req.query.limit, 10) || 100;
     const startIndex = (page - 1) * itemParPage;
     const endIndex = page * itemParPage;
 
@@ -223,13 +225,17 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 
 //-------------- The first method -----------------
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
-    const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id)
+    //const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id)
+    const bootcamp = await Bootcamp.findById(req.params.id)
     if (!bootcamp) {
         return res.status(400).send({
             success: false,
             error: `There is no product by this ID to delete ${req.params.id}`
         })
     }
+
+    bootcamp.remove();
+
     res.status(200).send({success: true, countBootcamp: Bootcamp.length, data: {}})
 })
 //-------------- The second method -----------------

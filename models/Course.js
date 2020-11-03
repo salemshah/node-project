@@ -34,13 +34,23 @@ const CourseSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    //
+    //name of field which can relate two document(work like primary key)
     bootcampRelated: {
         type: mongoose.Schema.ObjectId,
-        //Bootcamp is the name of Schema in database
-        ref: 'Bootcamp',
+        ref: 'Bootcamp',//Bootcamp is the name of Schema in database or name of document (table)
         required: true
     }
 });
+
+// call getAverageCost after save
+CourseSchema.post('save', function () {
+
+})
+
+// call getAverageCost before remove
+CourseSchema.pre('remove', function (next) {
+
+})
+
 
 module.exports = mongoose.model('Course', CourseSchema)

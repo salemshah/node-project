@@ -100,6 +100,13 @@ const BootcampSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+},
+    // for relation between  "bootcamp module" and "course module"
+    // "bootcamp module" is the parent of "course module".
+    // i create a virtual field "coursesLink" that related with "course"
+    {
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true}
 })
 
 // create bootcamp slug from the name
@@ -128,6 +135,23 @@ BootcampSchema.pre('save', async function (next) {
     // do not save address in database
     this.address = undefined
     next()
+})
+
+// cascade delete courses when a bootcamp is deleted
+BootcampSchema.pre('remove', async function (next) {
+    console.log(`BootcampRelated delete ${this._id}`)
+    await this.model('Course').deleteMany({bootcampRelated: this._id})
+    next()
+})
+
+// reverse populate with virtuals
+// one to many
+// bootcamp module is parent of course module
+BootcampSchema.virtual('coursesLink', {
+    ref: 'Course', // the name of module
+    localField: '_id', // the name of field inside (bootcamp module)
+    foreignField: 'bootcampRelated', // the name of field inside(course module)
+    justOne: false
 })
 
 // "Bootcamp" est le nom de collection et en mongoDB est devenue "Bootcamps"
